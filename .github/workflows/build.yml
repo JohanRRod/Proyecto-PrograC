@@ -28,4 +28,3 @@ jobs:
       - name: Correr tests
         working-directory: backend
         run: mvn -B test
-
