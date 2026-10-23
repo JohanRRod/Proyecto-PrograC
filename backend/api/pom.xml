@@ -5,7 +5,6 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Spring Boot -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -13,10 +12,9 @@
         <relativePath/>
     </parent>
 
-    <!-- Información del proyecto -->
     <groupId>com.fitpass</groupId>
     <artifactId>backend</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0</version>
     <name>fitpass</name>
     <description>Backend del sistema de gimnasios FitPass</description>
 
@@ -68,7 +66,6 @@
 
     <build>
         <plugins>
-            <!-- Ejecutar Spring Boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
