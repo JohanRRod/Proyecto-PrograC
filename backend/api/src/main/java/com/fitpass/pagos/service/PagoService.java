@@ -16,16 +16,16 @@ import java.util.*;
 @Service
 public class PagoService {
 
-   private final PagoRepository repository;
-private final OutboxService outboxService;
+    private final PagoRepository repository;
+    private final OutboxService outboxService;
 
-public PagoService(
-        PagoRepository repository,
-        OutboxService outboxService) {
+    public PagoService(
+            PagoRepository repository,
+            OutboxService outboxService) {
 
-    this.repository = repository;
-    this.outboxService = outboxService;
-}
+        this.repository = repository;
+        this.outboxService = outboxService;
+    }
 
     @Transactional
     public Map<String, Object> registrarMetodo(MetodoPagoRequest request) {
@@ -172,8 +172,10 @@ public PagoService(
                 );
             }
         }
-        
-outboxService.registrarEventoCobro(cobroId, estado);
+
+        // Registrar evento para RabbitMQ mediante Outbox.
+        // Se guarda dentro de la misma transacción del cobro.
+        outboxService.registrarEventoCobro(cobroId, estado);
 
         return repository.obtenerCobro(cobroId)
             .orElseThrow(() -> new ResponseStatusException(
