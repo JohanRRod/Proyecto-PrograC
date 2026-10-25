@@ -3,6 +3,7 @@ package com.fitpass.pagos.service;
 
 import com.fitpass.pagos.dto.*;
 import com.fitpass.pagos.repository.PagoRepository;
+import com.fitpass.mensajeria.service.OutboxService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,11 +16,16 @@ import java.util.*;
 @Service
 public class PagoService {
 
-    private final PagoRepository repository;
+   private final PagoRepository repository;
+private final OutboxService outboxService;
 
-    public PagoService(PagoRepository repository) {
-        this.repository = repository;
-    }
+public PagoService(
+        PagoRepository repository,
+        OutboxService outboxService) {
+
+    this.repository = repository;
+    this.outboxService = outboxService;
+}
 
     @Transactional
     public Map<String, Object> registrarMetodo(MetodoPagoRequest request) {
@@ -166,6 +172,8 @@ public class PagoService {
                 );
             }
         }
+        
+outboxService.registrarEventoCobro(cobroId, estado);
 
         return repository.obtenerCobro(cobroId)
             .orElseThrow(() -> new ResponseStatusException(

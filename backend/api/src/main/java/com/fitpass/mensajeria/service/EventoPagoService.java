@@ -41,11 +41,5 @@ public class EventoPagoService {
         return evento;
     }
 
-    @RabbitListener(queues = RabbitMQConfig.COLA_PAGOS)
-    public void consumirEvento(String mensaje) {
-
-        System.out.println(
-            "[FitPass RabbitMQ] Evento recibido: " + mensaje
-        );
-    }
+    
 }
