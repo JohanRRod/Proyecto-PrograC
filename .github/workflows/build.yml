@@ -1,3 +1,4 @@
+
 name: Build backend
 
 on:
@@ -10,6 +11,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: backend/api
+
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
@@ -20,11 +25,10 @@ jobs:
           java-version: "21"
           distribution: "temurin"
           cache: maven
+          cache-dependency-path: backend/api/pom.xml
 
-      - name: Compilar proyecto (multi-módulo)
-        working-directory: backend
+      - name: Compilar proyecto
         run: mvn -B clean install -DskipTests
 
       - name: Correr tests
-        working-directory: backend
         run: mvn -B test

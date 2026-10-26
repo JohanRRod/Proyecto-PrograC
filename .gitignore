@@ -1,0 +1,10 @@
+# Variables de entorno
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Archivos generados
+target/

@@ -12,6 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 @Service
 public class PagoService {
@@ -70,117 +72,250 @@ public class PagoService {
             ));
     }
 
-    @Transactional
-    public Map<String, Object> cobrar(CobroRequest request) {
+    
+@Transactional
+public Map<String, Object> cobrar(CobroRequest request) {
 
-        var membresia = repository.bloquearMembresia(
-            request.membresiaId()
-        ).orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND,
-            "Membresia no encontrada"
-        ));
+    var membresia = repository.bloquearMembresia(
+        request.membresiaId()
+    ).orElseThrow(() -> new ResponseStatusException(
+        HttpStatus.NOT_FOUND,
+        "Membresia no encontrada"
+    ));
 
-        if (!"ACTIVA".equals(membresia.estado())) {
+    boolean activa = "ACTIVA".equals(membresia.estado());
+    boolean suspendidaImpago =
+        "SUSPENDIDA_IMPAGO".equals(membresia.estado());
+
+    if (!activa && !suspendidaImpago) {
+        throw new ResponseStatusException(
+            HttpStatus.CONFLICT,
+            "La membresia no permite realizar cobros"
+        );
+    }
+
+    if (suspendidaImpago
+            && !"MENSUALIDAD".equals(request.concepto())) {
+        throw new ResponseStatusException(
+            HttpStatus.CONFLICT,
+            "Una membresia suspendida solo puede pagar mensualidades"
+        );
+    }
+
+    var metodo = repository.bloquearMetodo(
+        request.metodoPagoId()
+    ).orElseThrow(() -> new ResponseStatusException(
+        HttpStatus.BAD_REQUEST,
+        "Metodo de pago inexistente o inactivo"
+    ));
+
+    if (!metodo.clienteId().equals(membresia.clienteId())) {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "El metodo de pago no pertenece al cliente"
+        );
+    }
+
+    BigDecimal monto;
+    Integer cancelacionId = null;
+    Integer periodoFacturacionId = null;
+
+    LocalDate hoy = LocalDate.now(
+        ZoneId.of("America/Guatemala")
+    );
+
+    if ("MENSUALIDAD".equals(request.concepto())) {
+
+        LocalDate fechaInicio =
+            repository.obtenerFechaInicioMembresia(
+                membresia.id()
+            );
+
+        if (hoy.isBefore(fechaInicio)) {
             throw new ResponseStatusException(
                 HttpStatus.CONFLICT,
-                "La membresia no esta activa"
+                "La membresia aun no ha iniciado"
             );
         }
 
-        var metodo = repository.bloquearMetodo(
-            request.metodoPagoId()
-        ).orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.BAD_REQUEST,
-            "Metodo de pago inexistente o inactivo"
-        ));
+        Integer diaCorte =
+            repository.obtenerDiaCorteMensual(
+                membresia.id()
+            );
 
-        if (!metodo.clienteId().equals(membresia.clienteId())) {
+        LocalDate vencimientoActual =
+            hoy.withDayOfMonth(
+                Math.min(diaCorte, hoy.lengthOfMonth())
+            );
+
+        if (vencimientoActual.isBefore(fechaInicio)
+                && !repository.existenDeudasVencidas(
+                    membresia.id(), hoy)) {
             throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "El metodo de pago no pertenece al cliente"
+                HttpStatus.CONFLICT,
+                "El vencimiento es anterior al inicio de la membresia"
             );
         }
 
-        BigDecimal monto;
-        Integer cancelacionId = null;
+        var periodoPendiente =
+            repository.obtenerPeriodoPendienteMasAntiguo(
+                membresia.id(),
+                hoy
+            );
 
-        if ("MENSUALIDAD".equals(request.concepto())) {
+        if (periodoPendiente.isPresent()) {
 
-            if (repository.mensualidadPagadaEsteMes(
-                    membresia.id())) {
+            periodoFacturacionId = periodoPendiente.get();
+
+        } else {
+
+            if (suspendidaImpago) {
                 throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "La mensualidad de este mes ya fue pagada"
+                    "No existen mensualidades vencidas pendientes"
                 );
             }
 
-            monto = membresia.precioMensual();
+            if (hoy.isBefore(vencimientoActual)) {
+                throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "La mensualidad aun no ha vencido"
+                );
+            }
 
-        } else if ("PENALIZACION_CANCELACION".equals(
-                request.concepto())) {
+            periodoFacturacionId =
+                repository.obtenerOCrearPeriodoFacturacion(
+                    membresia.id()
+                );
+        }
 
-            var penalizacion = repository.penalizacionPendiente(
+        if (repository.periodoFacturacionPagado(
+                periodoFacturacionId)) {
+
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "La mensualidad de este periodo ya fue pagada"
+            );
+        }
+
+        // Compatibilidad con cobros antiguos sin periodo.
+        // Solo aplica cuando no hay deudas anteriores.
+        if (periodoPendiente.isEmpty()
+                && repository.existeCobroExitosoSinPeriodoEsteMes(
+                    membresia.id())) {
+
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Ya existe un cobro exitoso de este mes"
+            );
+        }
+
+        monto = membresia.precioMensual();
+
+    } else if ("PENALIZACION_CANCELACION".equals(
+            request.concepto())) {
+
+        var penalizacion =
+            repository.penalizacionPendiente(
                 membresia.id()
             ).orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.CONFLICT,
                 "No existe penalizacion pendiente"
             ));
 
-            cancelacionId = penalizacion.id();
-            monto = penalizacion.monto();
+        cancelacionId = penalizacion.id();
+        monto = penalizacion.monto();
 
-        } else {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Concepto no permitido"
-            );
-        }
+    } else {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "Concepto no permitido"
+        );
+    }
 
-        if (monto == null || monto.signum() <= 0) {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Monto de cobro invalido"
-            );
-        }
+    if (monto == null || monto.signum() <= 0) {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "Monto de cobro invalido"
+        );
+    }
 
-        BigDecimal saldo = metodo.saldo() == null
-            ? BigDecimal.ZERO
-            : metodo.saldo();
+    BigDecimal saldo = metodo.saldo() == null
+        ? BigDecimal.ZERO
+        : metodo.saldo();
 
-        boolean exitoso = saldo.compareTo(monto) >= 0;
+    boolean exitoso = saldo.compareTo(monto) >= 0;
 
-        String estado = exitoso
-            ? "EXITOSO"
-            : "RECHAZADO_FONDOS";
+    String estado = exitoso
+        ? "EXITOSO"
+        : "RECHAZADO_FONDOS";
 
-        Integer cobroId = repository.registrarCobro(
+    Integer cobroId;
+
+    if ("MENSUALIDAD".equals(request.concepto())) {
+
+        cobroId = repository.registrarCobro(
+            membresia.id(),
+            metodo.id(),
+            request.concepto(),
+            monto,
+            estado,
+            periodoFacturacionId
+        );
+
+    } else {
+
+        cobroId = repository.registrarCobro(
             membresia.id(),
             metodo.id(),
             request.concepto(),
             monto,
             estado
         );
+    }
 
-        if (exitoso) {
-            repository.descontarSaldo(metodo.id(), monto);
+    if (exitoso) {
 
-            if (cancelacionId != null) {
-                repository.completarCancelacion(
-                    cancelacionId,
-                    cobroId,
-                    membresia.id()
+        repository.descontarSaldo(metodo.id(), monto);
+
+        if (periodoFacturacionId != null) {
+
+            repository.marcarPeriodoPagado(
+                periodoFacturacionId,
+                cobroId
+            );
+
+            // Reactivar únicamente si todas las
+            // mensualidades vencidas están pagadas.
+            if (suspendidaImpago) {
+                repository.reactivarSiEstaAlDia(
+                    membresia.id(),
+                    hoy
                 );
             }
         }
 
-        // Registrar evento para RabbitMQ mediante Outbox.
-        // Se guarda dentro de la misma transacción del cobro.
-        outboxService.registrarEventoCobro(cobroId, estado);
-
-        return repository.obtenerCobro(cobroId)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "No se pudo consultar el cobro"
-            ));
+        if (cancelacionId != null) {
+            repository.completarCancelacion(
+                cancelacionId,
+                cobroId,
+                membresia.id()
+            );
+        }
     }
+
+    // Registrar evento en Outbox dentro
+    // de la misma transacción.
+    outboxService.registrarEventoCobro(
+        cobroId,
+        estado
+    );
+
+    return repository.obtenerCobro(cobroId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "No se pudo consultar el cobro"
+        ));
+}
+
 }
