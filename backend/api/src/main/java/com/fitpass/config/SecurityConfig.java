@@ -93,6 +93,11 @@ public class SecurityConfig {
                 // Bloquear otras rutas de autenticacion
                 .requestMatchers("/api/auth/**").denyAll()
 
+                // Permitir que Spring muestre los errores de la API
+.dispatcherTypeMatchers(
+    jakarta.servlet.DispatcherType.ERROR
+).permitAll()
+
                 // Denegar rutas no declaradas
                 .anyRequest().denyAll()
             )
