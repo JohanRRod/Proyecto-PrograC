@@ -20,10 +20,10 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestTemplate;
 
@@ -60,10 +60,8 @@ public class SecurityConfig {
                     "/api/catalogo/**"
                 ).permitAll()
 
-               
-
-// Mantener bloqueados los demás endpoints de desarrollo.
-.requestMatchers("/api/dev/**").denyAll()
+                // Bloquear endpoints de desarrollo
+                .requestMatchers("/api/dev/**").denyAll()
 
                 // Administracion
                 .requestMatchers(
@@ -75,7 +73,7 @@ public class SecurityConfig {
                     "/api/membresias/**"
                 ).hasRole("ADMIN")
 
-                // Mensajeria interna: solo administrador
+                // Mensajeria interna
                 .requestMatchers(
                     "/api/mensajeria/**"
                 ).hasRole("ADMIN")
@@ -95,7 +93,7 @@ public class SecurityConfig {
                 // Bloquear otras rutas de autenticacion
                 .requestMatchers("/api/auth/**").denyAll()
 
-                // Por defecto, bloquear rutas no declaradas
+                // Denegar rutas no declaradas
                 .anyRequest().denyAll()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
@@ -174,6 +172,7 @@ public class SecurityConfig {
 
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
 
+            // Solo tokens de usuarios autenticados
             if (!"authenticated".equals(
                     jwt.getClaimAsString("role"))) {
                 return List.of();
