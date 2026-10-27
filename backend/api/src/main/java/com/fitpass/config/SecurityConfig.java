@@ -54,6 +54,11 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
 
+                .requestMatchers("/api/clases", "/api/clases/**")
+    .hasRole("ADMIN")
+.requestMatchers("/api/reservas", "/api/reservas/**")
+    .hasRole("ADMIN")
+
                 // Catalogo publico
                 .requestMatchers(
                     HttpMethod.GET,
