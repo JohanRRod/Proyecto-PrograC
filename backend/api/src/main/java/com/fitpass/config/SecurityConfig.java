@@ -54,6 +54,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
 
+                .requestMatchers("/api/reportes/**").hasRole("ADMIN")
 
                 .requestMatchers("/api/amenidades", "/api/amenidades/**")
     .hasRole("ADMIN")
