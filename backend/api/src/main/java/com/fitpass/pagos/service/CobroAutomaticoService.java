@@ -469,6 +469,20 @@ public class CobroAutomaticoService {
             );
         }
     }
+    private void validarFechaSimulacion(LocalDate fecha) {
+
+    LocalDate hoy = hoyGuatemala();
+
+    if (fecha == null
+            || fecha.isBefore(hoy)
+            || fecha.isAfter(hoy.plusDays(90))) {
+
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "La fecha debe estar entre hoy y los proximos 90 dias"
+        );
+    }
+}
 
     public Map<String, Object> ejecutarPrueba(
             Integer membresiaId,
@@ -705,10 +719,10 @@ public class CobroAutomaticoService {
     }
 
     public Map<String, Object> simularMorosidad(
-            Integer membresiaId,
-            LocalDate fecha) {
+        Integer membresiaId,
+        LocalDate fecha) {
 
-        validarFechaPrueba(fecha);
+    validarFechaSimulacion(fecha);
 
         return transacciones.execute(status -> {
 

@@ -58,7 +58,7 @@ public class CobroIntegracionDevService {
                 || periodo.getDayOfMonth() != 1
                 || fecha == null
                 || fecha.isBefore(hoy)
-                || fecha.isAfter(hoy.plusDays(45))) {
+                || fecha.isAfter(hoy.plusDays(90))) {
 
             throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
