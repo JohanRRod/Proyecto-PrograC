@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.core.env.Environment;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +34,7 @@ import org.springframework.web.client.RestTemplate;
 public class SecurityConfig {
 
     private final NamedParameterJdbcTemplate db;
+    private final Environment environment;
 
     @Value("${fitpass.security.supabase-url}")
     private String supabaseUrl;
@@ -39,13 +42,21 @@ public class SecurityConfig {
     @Value("${fitpass.security.supabase-publishable-key}")
     private String supabasePublishableKey;
 
-    public SecurityConfig(NamedParameterJdbcTemplate db) {
+    public SecurityConfig(
+            NamedParameterJdbcTemplate db,
+            Environment environment) {
+
         this.db = db;
+        this.environment = environment;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http)
             throws Exception {
+
+                boolean perfilDev = java.util.Arrays.asList(
+    environment.getActiveProfiles()
+).contains("dev");
 
         http
             .csrf(csrf -> csrf.disable())
@@ -73,9 +84,40 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // Bloquear endpoints de desarrollo
-                .requestMatchers("/api/dev/**").denyAll()
+               .requestMatchers("/api/dev/**")
+    .access((authentication, context) -> {
 
-                // Administracion
+        boolean esAdmin = authentication.get()
+            .getAuthorities()
+            .stream()
+            .anyMatch(a ->
+                "ROLE_ADMIN".equals(a.getAuthority())
+            );
+
+        boolean permitido = perfilDev && esAdmin;
+
+        return new org.springframework.security.authorization.AuthorizationDecision(
+            permitido
+        );
+    })
+
+                
+                // Membresias del usuario autenticado
+.requestMatchers(
+    HttpMethod.GET,
+    "/api/mi/membresias"
+).hasRole("MIEMBRO")
+
+
+// Pagos del usuario autenticado
+.requestMatchers(
+    HttpMethod.GET,
+    "/api/mi/pagos/metodos",
+    "/api/mi/pagos/historial",
+    "/api/mi/pagos/periodos"
+).hasRole("MIEMBRO")
+
+    // Administracion
                 .requestMatchers(
                     "/api/planes/**",
                     "/api/sucursales/**",

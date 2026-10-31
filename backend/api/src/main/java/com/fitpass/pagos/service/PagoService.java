@@ -62,6 +62,14 @@ public class PagoService {
     public List<Map<String, Object>> historial(UUID clienteId) {
         return repository.historial(clienteId);
     }
+    
+@Transactional(readOnly = true)
+public List<Map<String, Object>> listarPeriodosPorCliente(
+        UUID clienteId) {
+
+    return repository.listarPeriodosPorCliente(clienteId);
+}
+
 
     @Transactional(readOnly = true)
     public Map<String, Object> obtenerCobro(Integer id) {

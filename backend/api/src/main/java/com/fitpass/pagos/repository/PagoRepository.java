@@ -537,4 +537,29 @@ public boolean reactivarSiEstaAlDia(
     return actualizadas > 0;
 }
 
+public List<Map<String, Object>> listarPeriodosPorCliente(
+        UUID clienteId) {
+
+    return jdbc.queryForList("""
+        SELECT
+            p.id,
+            p.membresia_id,
+            p.periodo,
+            p.fecha_vencimiento,
+            p.estado,
+            p.cobro_exitoso_id,
+            p.intentos,
+            p.ultimo_intento
+        FROM public.periodos_facturacion p
+        INNER JOIN public.membresias m
+            ON m.id = p.membresia_id
+        WHERE m.cliente_id = ?
+        ORDER BY p.periodo DESC, p.id DESC
+        """,
+        clienteId
+    );
+}
+
+
+
 }
