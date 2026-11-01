@@ -13,5 +13,13 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    // En desarrollo el frontend llama a /api en su mismo origen y Vite lo reenvía al backend.
+    // Así no hace falta CORS en local (ni para PATCH). En producción VITE_API_URL apunta al backend real.
+    proxy: {
+      '/api': {
+        target: process.env.VITE_BACKEND_URL ?? 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
   },
 })

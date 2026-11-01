@@ -15,6 +15,7 @@ En `.env.local` van la URL de la API y la URL + publishable key de Supabase
 (Supabase → Project Settings → API). Nunca la `service_role`.
 
 El backend debe estar corriendo en `http://localhost:8080` para que carguen las sedes y planes.
+Vite reenvía `/api` a ese puerto, así que en local no hace falta configurar CORS.
 Sin variables de Supabase, las páginas públicas funcionan pero no se puede iniciar sesión.
 
 ## Scripts

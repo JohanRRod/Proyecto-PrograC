@@ -7,7 +7,7 @@ function leer(nombre: keyof ImportMetaEnv): string | null {
   return typeof valor === 'string' && valor.trim() !== '' ? valor.trim() : null
 }
 
-const apiUrl = leer('VITE_API_URL') ?? 'http://localhost:8080/api'
+const apiUrl = leer('VITE_API_URL') ?? '/api'
 const supabaseUrl = leer('VITE_SUPABASE_URL')
 const supabaseKey = leer('VITE_SUPABASE_PUBLISHABLE_KEY')
 
