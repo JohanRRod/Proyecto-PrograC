@@ -23,6 +23,8 @@ export function TextoRespuesta({ texto }: { texto: string }) {
 
   for (const linea of texto.split('\n')) {
     const t = linea.trim()
+    // El asistente no debe mandar código; si llegara un bloque, se ocultan las marcas ```.
+    if (t.startsWith('```')) continue
     const vineta = /^[*-]\s+(.*)$/.exec(t)
     if (vineta) {
       lista.push(vineta[1])
