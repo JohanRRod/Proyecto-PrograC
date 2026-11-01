@@ -43,6 +43,7 @@ frontend/src/
    ├─ auth/      # sesión, perfil (/auth/me), login, invitaciones, guards
    ├─ catalog/   # países, sedes, amenidades, planes (público)
    ├─ member/    # pase y pagos del miembro (/api/mi/**)
+   ├─ asistente/ # chat del agente de IA y documentos del RAG
    └─ admin/     # panel administrativo
 ```
 
@@ -85,6 +86,18 @@ Después de iniciar sesión se redirige según el rol: `ADMIN` → `/admin`, `MI
 | `GET /api/mi/pagos/historial` | Cobros del miembro |
 | `GET /api/mi/pagos/periodos` | Períodos PAGADO/PENDIENTE |
 | `GET /api/mi/pagos/metodos` | Métodos de pago registrados |
+| `POST /api/ia/chat` | Asistente virtual (público, botón flotante en las páginas públicas) |
+| `GET /api/ia/documentos` | Documentos del RAG en el panel admin |
+| `POST /api/ia/ingesta` | Botón "Recargar documentos" en el panel admin |
+
+### Asistente virtual
+
+- Botón "Pregúntanos" fijo abajo a la derecha en las páginas públicas; cerrado por defecto, nunca se abre solo.
+- En teléfono el chat ocupa la pantalla completa; en escritorio es un panel de 24 rem.
+- Muestra la respuesta con viñetas, negritas y citas `[n]` como marcas; debajo, la lista de fuentes citadas.
+- Enter envía, Shift+Enter hace salto de línea, Escape cierra. Límite de 500 caracteres.
+- La sesión del chat se recuerda en `sessionStorage` (solo durante la pestaña).
+- El crédito de OpenStreetMap del mapa se movió arriba a la derecha para que el botón no lo tape.
 
 ## 6. Reglas de presentación
 

@@ -2,6 +2,7 @@ import { Panel } from '@/components/ui/Panel'
 import { ButtonLink } from '@/components/ui/Button'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { usePlanes, useSucursales } from '@/features/catalog/hooks'
+import { DocumentosRag } from '@/features/asistente/components/DocumentosRag'
 
 /**
  * Inicio del panel administrativo.
@@ -30,6 +31,9 @@ export function AdminHomePage() {
             </ButtonLink>
           </Panel>
         ))}
+      </div>
+      <div className="mt-6">
+        <DocumentosRag />
       </div>
     </>
   )

@@ -3,6 +3,7 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { rutaInicio } from '@/features/auth/types'
 import { cn } from '@/lib/cn'
 import { ButtonLink } from '@/components/ui/Button'
+import { AsistenteChat } from '@/features/asistente/components/AsistenteChat'
 import { Brand } from './Brand'
 
 const enlaces = [
@@ -52,6 +53,7 @@ export function PublicLayout() {
       <main className="flex flex-1 flex-col">
         <Outlet />
       </main>
+      <AsistenteChat />
     </div>
   )
 }
