@@ -58,11 +58,14 @@ public class SecurityConfig {
     environment.getActiveProfiles()
 ).contains("dev");
 
-        http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
+       
+http
+    .cors(cors -> {})
+    .csrf(csrf -> csrf.disable())
+    .sessionManagement(session -> session
+        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+    )
+
             .authorizeHttpRequests(auth -> auth
 
                 .requestMatchers("/api/reportes/**").hasRole("ADMIN")
