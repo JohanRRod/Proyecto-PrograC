@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { MapContainer, Marker, TileLayer, Tooltip, useMap } from 'react-leaflet'
+import { AttributionControl, MapContainer, Marker, TileLayer, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { coordenada, type Coordenada } from '../geo'
@@ -43,9 +43,11 @@ export function SedesMap({ sedes, seleccionadaId, ubicacionUsuario, onSelecciona
       minZoom={3}
       scrollWheelZoom
       className="size-full"
-      attributionControl
+      attributionControl={false}
       aria-label="Mapa de sedes FlexPass"
     >
+      {/* Crédito de OpenStreetMap arriba: abajo a la derecha queda el botón del asistente. */}
+      <AttributionControl position="topright" />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
