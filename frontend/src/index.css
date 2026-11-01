@@ -1,0 +1,86 @@
+@import 'tailwindcss';
+
+/*
+ * Tokens de FlexPass.
+ * La paleta toma el código de color de los discos olímpicos: cada plan y cada estado
+ * tiene un color con significado. No usar hex sueltos en componentes.
+ */
+@theme {
+  --font-sans: 'Barlow', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Barlow Semi Condensed', 'Barlow', ui-sans-serif, system-ui, sans-serif;
+
+  --color-chalk: #f3f5f4;
+  --color-surface: #ffffff;
+  --color-line: #dce2e0;
+  --color-line-strong: #c3ccc9;
+  --color-steel: #5e6a71;
+  --color-ink: #172026;
+  --color-ink-soft: #2b363d;
+
+  --color-plate-blue: #1d5fb8;
+  --color-plate-blue-dark: #174c93;
+  --color-plate-blue-soft: #e6eef9;
+  --color-plate-green: #23824f;
+  --color-plate-green-soft: #e3f2ea;
+  --color-plate-yellow: #d9a21b;
+  --color-plate-yellow-soft: #fbf1d6;
+  --color-plate-red: #c23a30;
+  --color-plate-red-soft: #f8e3e1;
+
+  --radius-control: 6px;
+  --radius-panel: 10px;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-chalk);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.005em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-plate-blue);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Leaflet: integrar controles con los tokens */
+.leaflet-container {
+  font-family: var(--font-sans);
+  background-color: #e8ecea;
+}
+
+.leaflet-control-zoom a {
+  color: var(--color-ink);
+}
+
+.flex-marker {
+  background: transparent;
+  border: none;
+}
