@@ -1,0 +1,83 @@
+import { createBrowserRouter } from 'react-router'
+import { CreditCard, LayoutDashboard, Ticket } from 'lucide-react'
+import { AppLayout, type ItemNav } from '@/components/layout/AppLayout'
+import { PublicLayout } from '@/components/layout/PublicLayout'
+import { RequireRole } from '@/features/auth/RequireRole'
+import { NotFoundPage } from '@/pages/NotFoundPage'
+import { RouteErrorPage } from '@/pages/RouteErrorPage'
+
+/*
+ * Las páginas se cargan bajo demanda: quien solo ve los planes no descarga Leaflet,
+ * y un visitante no descarga el panel del miembro ni el administrativo.
+ */
+
+const navMiembro: ItemNav[] = [
+  { to: '/mi', etiqueta: 'Mi pase', icono: Ticket, end: true },
+  { to: '/mi/pagos', etiqueta: 'Pagos', icono: CreditCard },
+]
+
+const navAdmin: ItemNav[] = [{ to: '/admin', etiqueta: 'Inicio', icono: LayoutDashboard, end: true }]
+
+const sedes = async () => ({ Component: (await import('@/features/catalog/pages/SedesPage')).SedesPage })
+
+export const router = createBrowserRouter([
+  {
+    errorElement: <RouteErrorPage />,
+    children: [
+      {
+        element: <PublicLayout />,
+        children: [
+          { index: true, lazy: sedes },
+          { path: 'sedes/:id', lazy: sedes },
+          {
+            path: 'planes',
+            lazy: async () => ({ Component: (await import('@/features/catalog/pages/PlanesPage')).PlanesPage }),
+          },
+        ],
+      },
+      {
+        path: 'ingresar',
+        lazy: async () => ({ Component: (await import('@/features/auth/pages/LoginPage')).LoginPage }),
+      },
+      {
+        path: 'auth/callback',
+        lazy: async () => ({ Component: (await import('@/features/auth/pages/AuthCallbackPage')).AuthCallbackPage }),
+      },
+      {
+        path: 'mi',
+        element: <RequireRole rol="MIEMBRO" />,
+        children: [
+          {
+            element: <AppLayout items={navMiembro} area="Mi cuenta" />,
+            children: [
+              {
+                index: true,
+                lazy: async () => ({ Component: (await import('@/features/member/pages/MemberHomePage')).MemberHomePage }),
+              },
+              {
+                path: 'pagos',
+                lazy: async () => ({ Component: (await import('@/features/member/pages/PagosPage')).PagosPage }),
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: 'admin',
+        element: <RequireRole rol="ADMIN" />,
+        children: [
+          {
+            element: <AppLayout items={navAdmin} area="Administración" />,
+            children: [
+              {
+                index: true,
+                lazy: async () => ({ Component: (await import('@/features/admin/pages/AdminHomePage')).AdminHomePage }),
+              },
+            ],
+          },
+        ],
+      },
+      { path: '*', element: <NotFoundPage /> },
+    ],
+  },
+])
