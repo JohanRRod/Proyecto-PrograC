@@ -69,6 +69,7 @@ Reglas:
 | `/mi` | `MIEMBRO` | Pase: membresía vigente, beneficios del plan, próximo cobro |
 | `/mi/pagos` | `MIEMBRO` | Historial de cobros, períodos y métodos de pago |
 | `/admin` | `ADMIN` | Inicio del panel administrativo y documentos del asistente |
+| `/admin/recepcion` | `ADMIN` | Registrar entradas: sede (recordada en el equipo), cliente y zona opcional; resultado permitido o rechazado con el motivo, e historial del cliente |
 | `/admin/clientes` | `ADMIN` | Lista con búsqueda (nombre, correo, documento) y filtro por estado |
 | `/admin/clientes/nuevo` | `ADMIN` | Registrar cliente |
 | `/admin/clientes/:id` | `ADMIN` | Detalle, invitar a la app, dar de baja; membresía (contratar, cobrar mensualidad, cancelar con penalización) y pagos (métodos e historial) |
@@ -92,6 +93,7 @@ Después de iniciar sesión se redirige según el rol: `ADMIN` → `/admin`, `MI
 | `GET /api/mi/pagos/metodos` | Métodos de pago registrados |
 | `GET/POST/PUT/DELETE /api/clientes` | Sección Clientes del admin (DELETE marca al cliente como INACTIVO) |
 | `POST /api/auth/miembros/invitar` | Botón "Invitar a la app" |
+| `POST /api/accesos/checkin`, `GET /api/accesos/historial/{id}` | Recepción e historial de accesos (también en el detalle del cliente) |
 | `GET /api/membresias/cliente/{id}`, `POST /api/membresias` | Membresía del cliente y "Contratar plan" |
 | `POST /api/membresias/{id}/cancelacion` | "Cancelar membresía": registra la solicitud y calcula la penalización |
 | `GET /api/pagos/metodos/cliente/{id}`, `POST /api/pagos/metodos` | Métodos de pago del cliente |

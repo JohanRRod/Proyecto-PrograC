@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
-import { ArrowLeft, Mail, Pencil, UserX } from 'lucide-react'
+import { ArrowLeft, DoorOpen, Mail, Pencil, UserX } from 'lucide-react'
 import { Aviso } from '@/components/ui/Aviso'
 import { EstadoBadge } from '@/components/ui/Badge'
 import { Button, ButtonLink } from '@/components/ui/Button'
@@ -10,6 +10,7 @@ import { Cargando, ErrorCarga } from '@/components/ui/StateMessage'
 import { useSucursales } from '@/features/catalog/hooks'
 import { ApiError } from '@/lib/http'
 import { formatoFecha } from '@/lib/format'
+import { HistorialAccesos } from '../../accesos/components/HistorialAccesos'
 import { MembresiaPanel } from '../../membresias/components/MembresiaPanel'
 import { MetodoPagoModal } from '../../pagos/components/MetodoPagoModal'
 import { PagosPanel } from '../../pagos/components/PagosPanel'
@@ -87,6 +88,13 @@ export function ClienteDetallePage() {
         {!deBaja && (
           <div className="flex flex-wrap gap-2">
             <ButtonLink
+              to={`/admin/recepcion?cliente=${id}`}
+              variante="secundario"
+              icono={<DoorOpen className="size-4" aria-hidden="true" />}
+            >
+              Registrar entrada
+            </ButtonLink>
+            <ButtonLink
               to={`/admin/clientes/${id}/editar`}
               variante="secundario"
               icono={<Pencil className="size-4" aria-hidden="true" />}
@@ -135,6 +143,10 @@ export function ClienteDetallePage() {
 
       <div className="mt-6">
         <PagosPanel clienteId={id} puedeAgregar={!deBaja} onAgregarMetodo={() => setDialogo('metodo')} />
+      </div>
+
+      <div className="mt-6">
+        <HistorialAccesos clienteId={id} />
       </div>
 
       <MetodoPagoModal
