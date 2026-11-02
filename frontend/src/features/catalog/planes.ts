@@ -38,3 +38,15 @@ export function beneficiosPlan(plan: Plan): Beneficio[] {
     },
   ]
 }
+
+/**
+ * Un plan por nombre (el de menor id). La tabla puede tener filas repetidas
+ * por cargas duplicadas de datos; al contratar solo se ofrece una opción por plan.
+ */
+export function planesUnicos(planes: Plan[]): Plan[] {
+  const porNombre = new Map<string, Plan>()
+  for (const p of [...planes].sort((a, b) => a.id - b.id)) {
+    if (!porNombre.has(p.nombre)) porNombre.set(p.nombre, p)
+  }
+  return [...porNombre.values()].sort((a, b) => Number(a.precio_mensual) - Number(b.precio_mensual))
+}

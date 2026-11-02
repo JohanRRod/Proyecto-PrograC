@@ -5,6 +5,7 @@ export interface MiMembresia {
   id: number
   clienteId: string
   planId: number
+  metodoPagoId: number | null
   fechaInicio: string
   fechaFinPermanenciaMinima: string
   diaCorteMensual: number
