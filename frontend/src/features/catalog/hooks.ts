@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { listarAmenidadesDeSucursal, listarPaises, listarPlanes, listarSucursales } from './api'
+import { listarAmenidades, listarAmenidadesDeSucursal, listarPaises, listarPlanes, listarSucursales } from './api'
 
 /** El catálogo cambia poco: se conserva 10 minutos antes de volver a pedirlo. */
 const CATALOGO = 10 * 60_000
@@ -8,6 +8,7 @@ export const catalogoKeys = {
   paises: ['catalogo', 'paises'] as const,
   sucursales: ['catalogo', 'sucursales'] as const,
   planes: ['catalogo', 'planes'] as const,
+  amenidadesTodas: ['catalogo', 'amenidades'] as const,
   amenidades: (id: number) => ['catalogo', 'sucursales', id, 'amenidades'] as const,
 }
 
@@ -25,3 +26,6 @@ export const useAmenidadesSucursal = (id: number | null) =>
     enabled: id !== null,
     staleTime: CATALOGO,
   })
+
+export const useAmenidades = () =>
+  useQuery({ queryKey: catalogoKeys.amenidadesTodas, queryFn: listarAmenidades, staleTime: CATALOGO })

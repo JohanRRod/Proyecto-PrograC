@@ -1,5 +1,5 @@
 import { createBrowserRouter } from 'react-router'
-import { CreditCard, LayoutDashboard, Ticket, Users } from 'lucide-react'
+import { CreditCard, DoorOpen, LayoutDashboard, Ticket, Users } from 'lucide-react'
 import { AppLayout, type ItemNav } from '@/components/layout/AppLayout'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { RequireRole } from '@/features/auth/RequireRole'
@@ -18,6 +18,7 @@ const navMiembro: ItemNav[] = [
 
 const navAdmin: ItemNav[] = [
   { to: '/admin', etiqueta: 'Inicio', icono: LayoutDashboard, end: true },
+  { to: '/admin/recepcion', etiqueta: 'Recepción', icono: DoorOpen },
   { to: '/admin/clientes', etiqueta: 'Clientes', icono: Users },
 ]
 
@@ -76,6 +77,10 @@ export const router = createBrowserRouter([
               {
                 index: true,
                 lazy: async () => ({ Component: (await import('@/features/admin/pages/AdminHomePage')).AdminHomePage }),
+              },
+              {
+                path: 'recepcion',
+                lazy: async () => ({ Component: (await import('@/features/admin/accesos/pages/RecepcionPage')).RecepcionPage }),
               },
               {
                 path: 'clientes',
