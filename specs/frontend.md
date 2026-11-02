@@ -68,7 +68,11 @@ Reglas:
 | `/auth/callback` | Público | Destino del correo de invitación: el miembro crea su contraseña |
 | `/mi` | `MIEMBRO` | Pase: membresía vigente, beneficios del plan, próximo cobro |
 | `/mi/pagos` | `MIEMBRO` | Historial de cobros, períodos y métodos de pago |
-| `/admin` | `ADMIN` | Inicio del panel administrativo |
+| `/admin` | `ADMIN` | Inicio del panel administrativo y documentos del asistente |
+| `/admin/clientes` | `ADMIN` | Lista con búsqueda (nombre, correo, documento) y filtro por estado |
+| `/admin/clientes/nuevo` | `ADMIN` | Registrar cliente |
+| `/admin/clientes/:id` | `ADMIN` | Detalle, invitar a la app y dar de baja (con confirmación) |
+| `/admin/clientes/:id/editar` | `ADMIN` | Editar datos; documento y sede base no se pueden cambiar |
 | `*` | Público | Página no encontrada |
 
 Después de iniciar sesión se redirige según el rol: `ADMIN` → `/admin`, `MIEMBRO` → `/mi`.
@@ -86,6 +90,8 @@ Después de iniciar sesión se redirige según el rol: `ADMIN` → `/admin`, `MI
 | `GET /api/mi/pagos/historial` | Cobros del miembro |
 | `GET /api/mi/pagos/periodos` | Períodos PAGADO/PENDIENTE |
 | `GET /api/mi/pagos/metodos` | Métodos de pago registrados |
+| `GET/POST/PUT/DELETE /api/clientes` | Sección Clientes del admin (DELETE marca al cliente como INACTIVO) |
+| `POST /api/auth/miembros/invitar` | Botón "Invitar a la app" |
 | `POST /api/ia/chat` | Asistente virtual (público, botón flotante en las páginas públicas) |
 | `GET /api/ia/documentos` | Documentos del RAG en el panel admin |
 | `POST /api/ia/ingesta` | Botón "Recargar documentos" en el panel admin |

@@ -1,5 +1,5 @@
 import { createBrowserRouter } from 'react-router'
-import { CreditCard, LayoutDashboard, Ticket } from 'lucide-react'
+import { CreditCard, LayoutDashboard, Ticket, Users } from 'lucide-react'
 import { AppLayout, type ItemNav } from '@/components/layout/AppLayout'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { RequireRole } from '@/features/auth/RequireRole'
@@ -16,7 +16,11 @@ const navMiembro: ItemNav[] = [
   { to: '/mi/pagos', etiqueta: 'Pagos', icono: CreditCard },
 ]
 
-const navAdmin: ItemNav[] = [{ to: '/admin', etiqueta: 'Inicio', icono: LayoutDashboard, end: true }]
+const navAdmin: ItemNav[] = [
+  { to: '/admin', etiqueta: 'Inicio', icono: LayoutDashboard, end: true },
+  { to: '/admin/clientes', etiqueta: 'Clientes', icono: Users },
+]
+
 
 const sedes = async () => ({ Component: (await import('@/features/catalog/pages/SedesPage')).SedesPage })
 
@@ -72,6 +76,28 @@ export const router = createBrowserRouter([
               {
                 index: true,
                 lazy: async () => ({ Component: (await import('@/features/admin/pages/AdminHomePage')).AdminHomePage }),
+              },
+              {
+                path: 'clientes',
+                lazy: async () => ({ Component: (await import('@/features/admin/clientes/pages/ClientesPage')).ClientesPage }),
+              },
+              {
+                path: 'clientes/nuevo',
+                lazy: async () => ({
+                  Component: (await import('@/features/admin/clientes/pages/ClienteNuevoPage')).ClienteNuevoPage,
+                }),
+              },
+              {
+                path: 'clientes/:id',
+                lazy: async () => ({
+                  Component: (await import('@/features/admin/clientes/pages/ClienteDetallePage')).ClienteDetallePage,
+                }),
+              },
+              {
+                path: 'clientes/:id/editar',
+                lazy: async () => ({
+                  Component: (await import('@/features/admin/clientes/pages/ClienteEditarPage')).ClienteEditarPage,
+                }),
               },
             ],
           },
