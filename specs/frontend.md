@@ -74,8 +74,15 @@ Reglas:
 | `/admin/clientes/nuevo` | `ADMIN` | Registrar cliente |
 | `/admin/clientes/:id` | `ADMIN` | Detalle, invitar a la app, dar de baja; membresía (contratar, cobrar mensualidad, cancelar con penalización) y pagos (métodos e historial) |
 | `/admin/clientes/:id/editar` | `ADMIN` | Editar datos; documento y sede base no se pueden cambiar |
+| `/admin/catalogo/sedes` | `ADMIN` | Sedes con búsqueda y filtros por país y estado |
+| `/admin/catalogo/sedes/nueva` | `ADMIN` | Crear sede; la ubicación se marca en el mapa (clic o arrastrar el marcador) |
+| `/admin/catalogo/sedes/:id` | `ADMIN` | Editar o desactivar la sede y administrar sus amenidades (cupo, horario especial, disponible) |
+| `/admin/catalogo/planes` | `ADMIN` | Planes: crear, editar, desactivar y reactivar, con vista previa del nivel |
+| `/admin/catalogo/amenidades` | `ADMIN` | Amenidades: crear y editar, marcar si son exclusivas Black |
 | `/admin/reportes` | `ADMIN` | Los 15 reportes por categoría: filtros por fechas y sede, vista previa con totales y descarga en Excel y PDF. El reporte y los filtros quedan en la URL (`?r=&desde=&hasta=&sede=`) |
 | `*` | Público | Página no encontrada |
+
+En el teléfono caben cinco pestañas abajo; si el área tiene más secciones, la quinta es "Más" y abre el resto.
 
 Después de iniciar sesión se redirige según el rol: `ADMIN` → `/admin`, `MIEMBRO` → `/mi`.
 
@@ -99,6 +106,10 @@ Después de iniciar sesión se redirige según el rol: `ADMIN` → `/admin`, `MI
 | `POST /api/membresias/{id}/cancelacion` | "Cancelar membresía": registra la solicitud y calcula la penalización |
 | `GET /api/pagos/metodos/cliente/{id}`, `POST /api/pagos/metodos` | Métodos de pago del cliente |
 | `GET /api/pagos/historial/cliente/{id}`, `POST /api/pagos/cobros` | Cobros; cobro manual de mensualidad y de la penalización de cancelación |
+| `GET/POST/PUT/DELETE /api/sucursales` | Catálogo de sedes del admin (incluye inactivas; DELETE desactiva) |
+| `GET/POST/PUT/DELETE /api/planes` | Catálogo de planes del admin (incluye inactivos; DELETE desactiva, PUT con `activo: true` reactiva) |
+| `GET/POST/PUT /api/amenidades` | Catálogo de amenidades |
+| `GET/POST/PUT /api/sucursales/{id}/amenidades` | Amenidades asignadas a una sede |
 | `GET /api/reportes` | Lista de reportes (código, título, descripción, categoría y filtros que acepta) |
 | `GET /api/reportes/{codigo}` | Vista previa: columnas con su tipo, filas, totales y filtros aplicados |
 | `GET /api/reportes/{codigo}/excel`, `GET /api/reportes/{codigo}/pdf` | Descargas. Los tres aceptan `desde`, `hasta` (yyyy-MM-dd) y `sucursalId`, todos opcionales |
