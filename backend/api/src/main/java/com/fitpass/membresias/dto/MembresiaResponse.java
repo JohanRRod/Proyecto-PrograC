@@ -11,6 +11,7 @@ public class MembresiaResponse {
     private Integer id;
     private UUID clienteId;
     private Integer planId;
+    private Integer metodoPagoId;
     private LocalDate fechaInicio;
     private LocalDate fechaFinPermanenciaMinima;
     private Integer diaCorteMensual;
@@ -21,6 +22,7 @@ public class MembresiaResponse {
         this.id = membresia.getId();
         this.clienteId = membresia.getClienteId();
         this.planId = membresia.getPlanId();
+        this.metodoPagoId = membresia.getMetodoPagoId();
         this.fechaInicio = membresia.getFechaInicio();
         this.fechaFinPermanenciaMinima =
                 membresia.getFechaFinPermanenciaMinima();
@@ -40,6 +42,10 @@ public class MembresiaResponse {
 
     public Integer getPlanId() {
         return planId;
+    }
+
+    public Integer getMetodoPagoId() {
+        return metodoPagoId;
     }
 
     public LocalDate getFechaInicio() {

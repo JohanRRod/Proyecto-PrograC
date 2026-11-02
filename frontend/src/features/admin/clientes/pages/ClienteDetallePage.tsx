@@ -10,10 +10,13 @@ import { Cargando, ErrorCarga } from '@/components/ui/StateMessage'
 import { useSucursales } from '@/features/catalog/hooks'
 import { ApiError } from '@/lib/http'
 import { formatoFecha } from '@/lib/format'
+import { MembresiaPanel } from '../../membresias/components/MembresiaPanel'
+import { MetodoPagoModal } from '../../pagos/components/MetodoPagoModal'
+import { PagosPanel } from '../../pagos/components/PagosPanel'
 import { useCliente, useDarDeBaja, useInvitar } from '../hooks'
 import { nombreCompleto } from '../types'
 
-type Dialogo = 'invitar' | 'baja' | null
+type Dialogo = 'invitar' | 'baja' | 'metodo' | null
 
 const mensajeError = (e: unknown) => (e instanceof ApiError ? e.message : 'No se pudo completar la acción.')
 
@@ -28,6 +31,11 @@ export function ClienteDetallePage() {
 
   const [dialogo, setDialogo] = useState<Dialogo>(null)
   const [aviso, setAviso] = useState<string | null>((location.state as { aviso?: string } | null)?.aviso ?? null)
+
+  const mostrarAviso = (mensaje: string) => {
+    setAviso(mensaje)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const cerrarAviso = () => {
     setAviso(null)
@@ -115,6 +123,30 @@ export function ClienteDetallePage() {
           <Dato etiqueta="Sede base">{sede ? `${sede.nombre} (${sede.ciudad}, ${sede.pais})` : `Sede #${c.sucursalBaseId}`}</Dato>
         </dl>
       </Panel>
+
+      <div className="mt-6">
+        <MembresiaPanel
+          clienteId={id}
+          clienteActivo={!deBaja}
+          onAviso={mostrarAviso}
+          onAgregarMetodo={() => setDialogo('metodo')}
+        />
+      </div>
+
+      <div className="mt-6">
+        <PagosPanel clienteId={id} puedeAgregar={!deBaja} onAgregarMetodo={() => setDialogo('metodo')} />
+      </div>
+
+      <MetodoPagoModal
+        abierto={dialogo === 'metodo'}
+        clienteId={id}
+        titularSugerido={nombreCompleto(c)}
+        onCerrar={() => setDialogo(null)}
+        onGuardado={() => {
+          setDialogo(null)
+          mostrarAviso('Método de pago agregado.')
+        }}
+      />
 
       {!deBaja && (
         <section className="mt-6 rounded-panel border border-plate-red/25 p-4 sm:p-5">

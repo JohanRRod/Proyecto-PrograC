@@ -71,7 +71,7 @@ Reglas:
 | `/admin` | `ADMIN` | Inicio del panel administrativo y documentos del asistente |
 | `/admin/clientes` | `ADMIN` | Lista con búsqueda (nombre, correo, documento) y filtro por estado |
 | `/admin/clientes/nuevo` | `ADMIN` | Registrar cliente |
-| `/admin/clientes/:id` | `ADMIN` | Detalle, invitar a la app y dar de baja (con confirmación) |
+| `/admin/clientes/:id` | `ADMIN` | Detalle, invitar a la app, dar de baja; membresía (contratar, cobrar mensualidad, cancelar con penalización) y pagos (métodos e historial) |
 | `/admin/clientes/:id/editar` | `ADMIN` | Editar datos; documento y sede base no se pueden cambiar |
 | `*` | Público | Página no encontrada |
 
@@ -92,6 +92,10 @@ Después de iniciar sesión se redirige según el rol: `ADMIN` → `/admin`, `MI
 | `GET /api/mi/pagos/metodos` | Métodos de pago registrados |
 | `GET/POST/PUT/DELETE /api/clientes` | Sección Clientes del admin (DELETE marca al cliente como INACTIVO) |
 | `POST /api/auth/miembros/invitar` | Botón "Invitar a la app" |
+| `GET /api/membresias/cliente/{id}`, `POST /api/membresias` | Membresía del cliente y "Contratar plan" |
+| `POST /api/membresias/{id}/cancelacion` | "Cancelar membresía": registra la solicitud y calcula la penalización |
+| `GET /api/pagos/metodos/cliente/{id}`, `POST /api/pagos/metodos` | Métodos de pago del cliente |
+| `GET /api/pagos/historial/cliente/{id}`, `POST /api/pagos/cobros` | Cobros; cobro manual de mensualidad y de la penalización de cancelación |
 | `POST /api/ia/chat` | Asistente virtual (público, botón flotante en las páginas públicas) |
 | `GET /api/ia/documentos` | Documentos del RAG en el panel admin |
 | `POST /api/ia/ingesta` | Botón "Recargar documentos" en el panel admin |
