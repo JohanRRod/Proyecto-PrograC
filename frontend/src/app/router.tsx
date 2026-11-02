@@ -1,5 +1,5 @@
-import { createBrowserRouter } from 'react-router'
-import { BarChart3, CreditCard, DoorOpen, LayoutDashboard, Ticket, Users } from 'lucide-react'
+import { createBrowserRouter, Navigate } from 'react-router'
+import { BarChart3, CreditCard, DoorOpen, LayoutDashboard, Store, Ticket, Users } from 'lucide-react'
 import { AppLayout, type ItemNav } from '@/components/layout/AppLayout'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { RequireRole } from '@/features/auth/RequireRole'
@@ -20,6 +20,7 @@ const navAdmin: ItemNav[] = [
   { to: '/admin', etiqueta: 'Inicio', icono: LayoutDashboard, end: true },
   { to: '/admin/recepcion', etiqueta: 'Recepción', icono: DoorOpen },
   { to: '/admin/clientes', etiqueta: 'Clientes', icono: Users },
+  { to: '/admin/catalogo', etiqueta: 'Catálogo', icono: Store },
   { to: '/admin/reportes', etiqueta: 'Reportes', icono: BarChart3 },
 ]
 
@@ -82,6 +83,37 @@ export const router = createBrowserRouter([
               {
                 path: 'recepcion',
                 lazy: async () => ({ Component: (await import('@/features/admin/accesos/pages/RecepcionPage')).RecepcionPage }),
+              },
+              {
+                path: 'catalogo',
+                children: [
+                  {
+                    lazy: async () => ({ Component: (await import('@/features/admin/catalogo/components/CatalogoLayout')).CatalogoLayout }),
+                    children: [
+                      { index: true, element: <Navigate to="sedes" replace /> },
+                      {
+                        path: 'sedes',
+                        lazy: async () => ({ Component: (await import('@/features/admin/catalogo/pages/SedesAdminPage')).SedesAdminPage }),
+                      },
+                      {
+                        path: 'planes',
+                        lazy: async () => ({ Component: (await import('@/features/admin/catalogo/pages/PlanesAdminPage')).PlanesAdminPage }),
+                      },
+                      {
+                        path: 'amenidades',
+                        lazy: async () => ({ Component: (await import('@/features/admin/catalogo/pages/AmenidadesAdminPage')).AmenidadesAdminPage }),
+                      },
+                    ],
+                  },
+                  {
+                    path: 'sedes/nueva',
+                    lazy: async () => ({ Component: (await import('@/features/admin/catalogo/pages/SedeNuevaPage')).SedeNuevaPage }),
+                  },
+                  {
+                    path: 'sedes/:id',
+                    lazy: async () => ({ Component: (await import('@/features/admin/catalogo/pages/SedeDetallePage')).SedeDetallePage }),
+                  },
+                ],
               },
               {
                 path: 'reportes',
