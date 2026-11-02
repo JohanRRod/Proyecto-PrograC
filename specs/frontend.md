@@ -83,6 +83,7 @@ Reglas:
 | `/admin/catalogo/sedes/:id` | `ADMIN` | Editar o desactivar la sede y administrar sus amenidades (cupo, horario especial, disponible) |
 | `/admin/catalogo/planes` | `ADMIN` | Planes: crear, editar, desactivar y reactivar, con vista previa del nivel |
 | `/admin/catalogo/amenidades` | `ADMIN` | Amenidades: crear y editar, marcar si son exclusivas Black |
+| `/admin/bitacora` | `ADMIN` | Bitácora: operaciones del sistema (quién, cuándo, IP, antes y después de cada cambio) con filtros por fechas, módulo, acción y resultado; pestaña con las conversaciones del asistente de IA. Filtros en la URL |
 | `/admin/reportes` | `ADMIN` | Los 15 reportes por categoría: filtros por fechas y sede, vista previa con totales y descarga en Excel y PDF. El reporte y los filtros quedan en la URL (`?r=&desde=&hasta=&sede=`) |
 | `*` | Público | Página no encontrada |
 
@@ -121,6 +122,8 @@ Después de iniciar sesión se redirige según el rol: `ADMIN` → `/admin`, `MI
 | `GET/POST/PUT /api/instructores` | Instructores (PUT con `activo: false` lo desactiva) |
 | `GET /api/mi/clases?sucursalId=` | Clases del miembro en los próximos 7 días, con cupos, si ya reservó y `motivoSede` si su plan no le permite esa sede |
 | `GET/POST /api/mi/reservas`, `PATCH /api/mi/reservas/{id}/cancelar` | Reservas propias del miembro |
+| `GET /api/bitacora`, `GET /api/bitacora/{id}`, `GET /api/bitacora/opciones` | Bitácora (`logs_sistema`): lista paginada con filtros y detalle con antes/después |
+| `GET /api/bitacora/ia` | Conversaciones con el asistente (`logs_agente_ia`) |
 | `GET /api/reportes` | Lista de reportes (código, título, descripción, categoría y filtros que acepta) |
 | `GET /api/reportes/{codigo}` | Vista previa: columnas con su tipo, filas, totales y filtros aplicados |
 | `GET /api/reportes/{codigo}/excel`, `GET /api/reportes/{codigo}/pdf` | Descargas. Los tres aceptan `desde`, `hasta` (yyyy-MM-dd) y `sucursalId`, todos opcionales |
