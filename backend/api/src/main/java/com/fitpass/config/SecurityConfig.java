@@ -76,6 +76,8 @@ public class SecurityConfig {
     .hasRole("ADMIN")
 .requestMatchers("/api/reservas", "/api/reservas/**")
     .hasRole("ADMIN")
+                .requestMatchers("/api/instructores", "/api/instructores/**")
+    .hasRole("ADMIN")
 
                 // Catalogo publico
                 .requestMatchers(
@@ -112,6 +114,13 @@ public class SecurityConfig {
     "/api/mi/membresias"
 ).hasRole("MIEMBRO")
 
+
+// Clases y reservas del usuario autenticado
+.requestMatchers(
+    "/api/mi/clases",
+    "/api/mi/reservas",
+    "/api/mi/reservas/**"
+).hasRole("MIEMBRO")
 
 // Pagos del usuario autenticado
 .requestMatchers(

@@ -67,6 +67,7 @@ Reglas:
 | `/ingresar` | Público | Inicio de sesión con correo y contraseña |
 | `/auth/callback` | Público | Destino del correo de invitación: el miembro crea su contraseña |
 | `/mi` | `MIEMBRO` | Pase: membresía vigente, beneficios del plan, próximo cobro |
+| `/mi/clases` | `MIEMBRO` | Clases de los próximos 7 días por sede (por defecto su sede base): reservar, cancelar y "Mis reservas" con historial. Avisa si su plan no le permite reservar en esa sede |
 | `/mi/pagos` | `MIEMBRO` | Historial de cobros, períodos y métodos de pago |
 | `/admin` | `ADMIN` | Inicio del panel administrativo y documentos del asistente |
 | `/admin/recepcion` | `ADMIN` | Registrar entradas: sede (recordada en el equipo), cliente y zona opcional; resultado permitido o rechazado con el motivo, e historial del cliente |
@@ -74,6 +75,9 @@ Reglas:
 | `/admin/clientes/nuevo` | `ADMIN` | Registrar cliente |
 | `/admin/clientes/:id` | `ADMIN` | Detalle, invitar a la app, dar de baja; membresía (contratar, cobrar mensualidad, cancelar con penalización) y pagos (métodos e historial) |
 | `/admin/clientes/:id/editar` | `ADMIN` | Editar datos; documento y sede base no se pueden cambiar |
+| `/admin/clases` | `ADMIN` | Semana de clases de una sede con lo reservado de cada una; crear clase. Sede y semana quedan en la URL (`?sede=&semana=`) |
+| `/admin/clases/:id` | `ADMIN` | Una clase en una fecha (`?fecha=`): editarla, reservar a nombre de un cliente, cancelar reservas y marcar asistencia cuando ya empezó |
+| `/admin/clases/instructores` | `ADMIN` | Instructores: registrar, editar y desactivar |
 | `/admin/catalogo/sedes` | `ADMIN` | Sedes con búsqueda y filtros por país y estado |
 | `/admin/catalogo/sedes/nueva` | `ADMIN` | Crear sede; la ubicación se marca en el mapa (clic o arrastrar el marcador) |
 | `/admin/catalogo/sedes/:id` | `ADMIN` | Editar o desactivar la sede y administrar sus amenidades (cupo, horario especial, disponible) |
@@ -110,6 +114,13 @@ Después de iniciar sesión se redirige según el rol: `ADMIN` → `/admin`, `MI
 | `GET/POST/PUT/DELETE /api/planes` | Catálogo de planes del admin (incluye inactivos; DELETE desactiva, PUT con `activo: true` reactiva) |
 | `GET/POST/PUT /api/amenidades` | Catálogo de amenidades |
 | `GET/POST/PUT /api/sucursales/{id}/amenidades` | Amenidades asignadas a una sede |
+| `GET /api/clases`, `POST /api/clases`, `PUT /api/clases/{id}` | Clases del admin. Al guardar se valida el horario de la sede, que el instructor no tenga otra clase a esa hora y que no queden reservas fuera del nuevo día o cupo |
+| `GET /api/clases/ocupacion` | Reservas por clase y fecha de una semana (`sucursalId`, `desde`, `hasta`) |
+| `GET /api/clases/{id}/reservas?fecha=` | Quién reservó una clase en una fecha |
+| `POST /api/reservas`, `PATCH /api/reservas/{id}/cancelar`, `PATCH /api/reservas/{id}/asistencia` | Reservar a nombre de un cliente, cancelar y marcar Asistió / No asistió |
+| `GET/POST/PUT /api/instructores` | Instructores (PUT con `activo: false` lo desactiva) |
+| `GET /api/mi/clases?sucursalId=` | Clases del miembro en los próximos 7 días, con cupos, si ya reservó y `motivoSede` si su plan no le permite esa sede |
+| `GET/POST /api/mi/reservas`, `PATCH /api/mi/reservas/{id}/cancelar` | Reservas propias del miembro |
 | `GET /api/reportes` | Lista de reportes (código, título, descripción, categoría y filtros que acepta) |
 | `GET /api/reportes/{codigo}` | Vista previa: columnas con su tipo, filas, totales y filtros aplicados |
 | `GET /api/reportes/{codigo}/excel`, `GET /api/reportes/{codigo}/pdf` | Descargas. Los tres aceptan `desde`, `hasta` (yyyy-MM-dd) y `sucursalId`, todos opcionales |
@@ -141,7 +152,6 @@ Después de iniciar sesión se redirige según el rol: `ADMIN` → `/admin`, `MI
 
 Necesario para que el miembro pueda operar por sí mismo (hoy solo puede consultar):
 
-- `GET /api/mi/clases` y `POST /api/mi/reservas` (hoy `/api/clases` y `/api/reservas` son solo ADMIN).
 - `POST /api/mi/membresias/{id}/cancelacion` con vista previa de la penalización.
 - `GET /api/mi/accesos`.
 - CORS: incluir `PATCH` (ya está en la rama `parte-johan`) y el dominio de producción, y exponer
