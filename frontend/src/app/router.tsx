@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router'
-import { BarChart3, CreditCard, DoorOpen, LayoutDashboard, Store, Ticket, Users } from 'lucide-react'
+import { BarChart3, CalendarDays, CreditCard, DoorOpen, LayoutDashboard, Store, Ticket, Users } from 'lucide-react'
 import { AppLayout, type ItemNav } from '@/components/layout/AppLayout'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { RequireRole } from '@/features/auth/RequireRole'
@@ -13,6 +13,7 @@ import { RouteErrorPage } from '@/pages/RouteErrorPage'
 
 const navMiembro: ItemNav[] = [
   { to: '/mi', etiqueta: 'Mi pase', icono: Ticket, end: true },
+  { to: '/mi/clases', etiqueta: 'Clases', icono: CalendarDays },
   { to: '/mi/pagos', etiqueta: 'Pagos', icono: CreditCard },
 ]
 
@@ -20,6 +21,7 @@ const navAdmin: ItemNav[] = [
   { to: '/admin', etiqueta: 'Inicio', icono: LayoutDashboard, end: true },
   { to: '/admin/recepcion', etiqueta: 'Recepción', icono: DoorOpen },
   { to: '/admin/clientes', etiqueta: 'Clientes', icono: Users },
+  { to: '/admin/clases', etiqueta: 'Clases', icono: CalendarDays },
   { to: '/admin/catalogo', etiqueta: 'Catálogo', icono: Store },
   { to: '/admin/reportes', etiqueta: 'Reportes', icono: BarChart3 },
 ]
@@ -62,6 +64,10 @@ export const router = createBrowserRouter([
                 lazy: async () => ({ Component: (await import('@/features/member/pages/MemberHomePage')).MemberHomePage }),
               },
               {
+                path: 'clases',
+                lazy: async () => ({ Component: (await import('@/features/member/pages/ClasesPage')).ClasesPage }),
+              },
+              {
                 path: 'pagos',
                 lazy: async () => ({ Component: (await import('@/features/member/pages/PagosPage')).PagosPage }),
               },
@@ -83,6 +89,18 @@ export const router = createBrowserRouter([
               {
                 path: 'recepcion',
                 lazy: async () => ({ Component: (await import('@/features/admin/accesos/pages/RecepcionPage')).RecepcionPage }),
+              },
+              {
+                path: 'clases',
+                lazy: async () => ({ Component: (await import('@/features/admin/clases/pages/ClasesAdminPage')).ClasesAdminPage }),
+              },
+              {
+                path: 'clases/instructores',
+                lazy: async () => ({ Component: (await import('@/features/admin/clases/pages/InstructoresPage')).InstructoresPage }),
+              },
+              {
+                path: 'clases/:id',
+                lazy: async () => ({ Component: (await import('@/features/admin/clases/pages/ClaseDetallePage')).ClaseDetallePage }),
               },
               {
                 path: 'catalogo',
