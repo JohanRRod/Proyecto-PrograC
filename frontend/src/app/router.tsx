@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router'
-import { BarChart3, CalendarDays, CreditCard, DoorOpen, LayoutDashboard, Store, Ticket, Users } from 'lucide-react'
+import { BarChart3, CalendarDays, CreditCard, DoorOpen, LayoutDashboard, ScrollText, Store, Ticket, Users } from 'lucide-react'
 import { AppLayout, type ItemNav } from '@/components/layout/AppLayout'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { RequireRole } from '@/features/auth/RequireRole'
@@ -24,6 +24,7 @@ const navAdmin: ItemNav[] = [
   { to: '/admin/clases', etiqueta: 'Clases', icono: CalendarDays },
   { to: '/admin/catalogo', etiqueta: 'Catálogo', icono: Store },
   { to: '/admin/reportes', etiqueta: 'Reportes', icono: BarChart3 },
+  { to: '/admin/bitacora', etiqueta: 'Bitácora', icono: ScrollText },
 ]
 
 
@@ -132,6 +133,10 @@ export const router = createBrowserRouter([
                     lazy: async () => ({ Component: (await import('@/features/admin/catalogo/pages/SedeDetallePage')).SedeDetallePage }),
                   },
                 ],
+              },
+              {
+                path: 'bitacora',
+                lazy: async () => ({ Component: (await import('@/features/admin/bitacora/pages/BitacoraPage')).BitacoraPage }),
               },
               {
                 path: 'reportes',

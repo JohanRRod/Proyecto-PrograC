@@ -8,6 +8,8 @@ interface Props {
   children: ReactNode
   /** Mientras se guarda no se puede cerrar con Escape ni con la X. */
   bloqueado?: boolean
+  /** Más ancho, para tablas (por ejemplo, el antes y después de la bitácora). */
+  amplio?: boolean
   onCerrar: () => void
 }
 
@@ -15,7 +17,7 @@ interface Props {
  * Ventana para formularios cortos (contratar plan, registrar método de pago...).
  * Usa <dialog> nativo: atrapa el foco y se cierra con Escape.
  */
-export function Modal({ abierto, titulo, descripcion, children, bloqueado = false, onCerrar }: Props) {
+export function Modal({ abierto, titulo, descripcion, children, bloqueado = false, amplio = false, onCerrar }: Props) {
   const ref = useRef<HTMLDialogElement>(null)
   const tituloId = useId()
 
@@ -34,7 +36,7 @@ export function Modal({ abierto, titulo, descripcion, children, bloqueado = fals
         e.preventDefault()
         if (!bloqueado) onCerrar()
       }}
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(32rem,calc(100vw-2rem))] overflow-y-auto rounded-panel border border-line bg-surface p-0 text-ink shadow-[0_12px_40px_rgb(23_32_38/0.18)] backdrop:bg-ink/40"
+      className={`m-auto max-h-[calc(100dvh-2rem)] ${amplio ? 'w-[min(52rem,calc(100vw-2rem))]' : 'w-[min(32rem,calc(100vw-2rem))]'} overflow-y-auto rounded-panel border border-line bg-surface p-0 text-ink shadow-[0_12px_40px_rgb(23_32_38/0.18)] backdrop:bg-ink/40`}
     >
       {abierto && (
         <div className="p-5 sm:p-6">
