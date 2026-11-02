@@ -74,6 +74,7 @@ Reglas:
 | `/admin/clientes/nuevo` | `ADMIN` | Registrar cliente |
 | `/admin/clientes/:id` | `ADMIN` | Detalle, invitar a la app, dar de baja; membresía (contratar, cobrar mensualidad, cancelar con penalización) y pagos (métodos e historial) |
 | `/admin/clientes/:id/editar` | `ADMIN` | Editar datos; documento y sede base no se pueden cambiar |
+| `/admin/reportes` | `ADMIN` | Los 15 reportes por categoría: filtros por fechas y sede, vista previa con totales y descarga en Excel y PDF. El reporte y los filtros quedan en la URL (`?r=&desde=&hasta=&sede=`) |
 | `*` | Público | Página no encontrada |
 
 Después de iniciar sesión se redirige según el rol: `ADMIN` → `/admin`, `MIEMBRO` → `/mi`.
@@ -98,6 +99,9 @@ Después de iniciar sesión se redirige según el rol: `ADMIN` → `/admin`, `MI
 | `POST /api/membresias/{id}/cancelacion` | "Cancelar membresía": registra la solicitud y calcula la penalización |
 | `GET /api/pagos/metodos/cliente/{id}`, `POST /api/pagos/metodos` | Métodos de pago del cliente |
 | `GET /api/pagos/historial/cliente/{id}`, `POST /api/pagos/cobros` | Cobros; cobro manual de mensualidad y de la penalización de cancelación |
+| `GET /api/reportes` | Lista de reportes (código, título, descripción, categoría y filtros que acepta) |
+| `GET /api/reportes/{codigo}` | Vista previa: columnas con su tipo, filas, totales y filtros aplicados |
+| `GET /api/reportes/{codigo}/excel`, `GET /api/reportes/{codigo}/pdf` | Descargas. Los tres aceptan `desde`, `hasta` (yyyy-MM-dd) y `sucursalId`, todos opcionales |
 | `POST /api/ia/chat` | Asistente virtual (público, botón flotante en las páginas públicas) |
 | `GET /api/ia/documentos` | Documentos del RAG en el panel admin |
 | `POST /api/ia/ingesta` | Botón "Recargar documentos" en el panel admin |
@@ -129,4 +133,5 @@ Necesario para que el miembro pueda operar por sí mismo (hoy solo puede consult
 - `GET /api/mi/clases` y `POST /api/mi/reservas` (hoy `/api/clases` y `/api/reservas` son solo ADMIN).
 - `POST /api/mi/membresias/{id}/cancelacion` con vista previa de la penalización.
 - `GET /api/mi/accesos`.
-- CORS: incluir `PATCH` (ya está en la rama `parte-johan`) y el dominio de producción.
+- CORS: incluir `PATCH` (ya está en la rama `parte-johan`) y el dominio de producción, y exponer
+  `Content-Disposition` para que las descargas de reportes conserven el nombre del archivo en producción.

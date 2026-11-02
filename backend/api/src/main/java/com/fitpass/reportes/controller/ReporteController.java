@@ -1,125 +1,88 @@
 package com.fitpass.reportes.controller;
 
-import com.fitpass.reportes.service.ReporteService;
+import com.fitpass.reportes.dto.ReporteFiltros;
+import com.fitpass.reportes.dto.ReporteInfo;
+import com.fitpass.reportes.dto.ReporteResultado;
 import com.fitpass.reportes.service.ExcelService;
 import com.fitpass.reportes.service.PdfService;
-
-import org.springframework.http.*;
+import com.fitpass.reportes.service.ReporteService;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Set;
-import org.springframework.web.server.ResponseStatusException;
-
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
+/**
+ * Reportes administrativos. Todos aceptan los filtros opcionales
+ * desde, hasta (yyyy-MM-dd) y sucursalId.
+ */
 @RestController
 @RequestMapping("/api/reportes")
 @PreAuthorize("hasRole('ADMIN')")
 public class ReporteController {
 
+    private static final MediaType EXCEL = MediaType.parseMediaType(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
     private final ReporteService reportes;
     private final ExcelService excel;
     private final PdfService pdf;
 
-    public ReporteController(
-            ReporteService reportes,
-            ExcelService excel,
-            PdfService pdf) {
+    public ReporteController(ReporteService reportes, ExcelService excel, PdfService pdf) {
         this.reportes = reportes;
         this.excel = excel;
         this.pdf = pdf;
     }
 
-    @GetMapping("/clientes")
-    public List<Map<String, Object>> clientes() {
-        return reportes.clientesRegistrados();
-    }
-
-    @GetMapping("/clientes/excel")
-    public ResponseEntity<byte[]> clientesExcel() {
-        byte[] archivo = excel.generar(
-            "Clientes registrados - FitPass",
-            reportes.clientesRegistrados()
-        );
-
-        return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"clientes_fitpass.xlsx\"")
-            .contentType(MediaType.parseMediaType(
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-            .body(archivo);
-    }
-
-    @GetMapping("/clientes/pdf")
-    public ResponseEntity<byte[]> clientesPdf() {
-        byte[] archivo = pdf.generar(
-            "Clientes registrados - FitPass",
-            reportes.clientesRegistrados()
-        );
-
-        return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"clientes_fitpass.pdf\"")
-            .contentType(MediaType.APPLICATION_PDF)
-            .body(archivo);
-    }
-
     @GetMapping
-public Set<String> disponibles() {
-    return reportes.disponibles();
-}
-
-@GetMapping("/{codigo}/excel")
-public ResponseEntity<byte[]> exportarExcel(
-        @PathVariable String codigo) {
-
-    validarCodigo(codigo);
-
-    byte[] archivo = excel.generar(
-        "FitPass - " + codigo,
-        reportes.consultar(codigo)
-    );
-
-    return ResponseEntity.ok()
-        .header(
-            HttpHeaders.CONTENT_DISPOSITION,
-            "attachment; filename=\"" + codigo + ".xlsx\""
-        )
-        .contentType(MediaType.parseMediaType(
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        ))
-        .body(archivo);
-}
-
-@GetMapping("/{codigo}/pdf")
-public ResponseEntity<byte[]> exportarPdf(
-        @PathVariable String codigo) {
-
-    validarCodigo(codigo);
-
-    byte[] archivo = pdf.generar(
-        "FitPass - " + codigo,
-        reportes.consultar(codigo)
-    );
-
-    return ResponseEntity.ok()
-        .header(
-            HttpHeaders.CONTENT_DISPOSITION,
-            "attachment; filename=\"" + codigo + ".pdf\""
-        )
-        .contentType(MediaType.APPLICATION_PDF)
-        .body(archivo);
-}
-
-private void validarCodigo(String codigo) {
-    if (!reportes.disponibles().contains(codigo)) {
-        throw new ResponseStatusException(
-            HttpStatus.NOT_FOUND,
-            "Reporte no encontrado"
-        );
+    public List<ReporteInfo> disponibles() {
+        return reportes.disponibles();
     }
-}
+
+    @GetMapping("/{codigo}")
+    public ReporteResultado consultar(
+            @PathVariable String codigo,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false) Integer sucursalId) {
+        return reportes.generar(codigo, new ReporteFiltros(desde, hasta, sucursalId));
+    }
+
+    @GetMapping("/{codigo}/excel")
+    public ResponseEntity<byte[]> exportarExcel(
+            @PathVariable String codigo,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false) Integer sucursalId) {
+        ReporteResultado resultado = reportes.generar(codigo, new ReporteFiltros(desde, hasta, sucursalId));
+        return archivo(excel.generar(resultado), nombreArchivo(resultado, "xlsx"), EXCEL);
+    }
+
+    @GetMapping("/{codigo}/pdf")
+    public ResponseEntity<byte[]> exportarPdf(
+            @PathVariable String codigo,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false) Integer sucursalId) {
+        ReporteResultado resultado = reportes.generar(codigo, new ReporteFiltros(desde, hasta, sucursalId));
+        return archivo(pdf.generar(resultado), nombreArchivo(resultado, "pdf"), MediaType.APPLICATION_PDF);
+    }
+
+    private static String nombreArchivo(ReporteResultado resultado, String extension) {
+        return "flexpass-" + resultado.reporte().codigo() + "-"
+            + resultado.generadoEn().toLocalDate() + "." + extension;
+    }
+
+    private static ResponseEntity<byte[]> archivo(byte[] contenido, String nombre, MediaType tipo) {
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION,
+                ContentDisposition.attachment().filename(nombre).build().toString())
+            .contentType(tipo)
+            .body(contenido);
+    }
 }
