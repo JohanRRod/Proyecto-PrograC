@@ -31,6 +31,10 @@ services:
     environment:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: "5672"
+      # El backend está detrás de nginx y Cloudflare: con esto toma el https y el dominio
+      # reales de los encabezados X-Forwarded-*. Sin esto, Spring cree que la petición es
+      # http y rechaza como "CORS inválido" todo POST/PUT/PATCH/DELETE del navegador.
+      SERVER_FORWARD_HEADERS_STRATEGY: native
     depends_on:
       rabbitmq:
         condition: service_healthy
