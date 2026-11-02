@@ -1,0 +1,61 @@
+# Producción en la Raspberry Pi (o cualquier servidor con Docker).
+#
+#   internet ──► Cloudflare ──► cloudflared ──► web (nginx: React + /api) ──► api (Spring Boot) ──► rabbitmq
+#                                                                                  └──► Supabase (base de datos)
+#
+# Ningún contenedor publica puertos en la Pi: solo cloudflared sale hacia Cloudflare.
+# Uso (desde esta carpeta):  docker compose up -d --build
+
+name: flexpass
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    mem_limit: 512m
+
+  api:
+    build: ../../backend/api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: "5672"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    mem_limit: 1g
+
+  web:
+    build:
+      context: ../../frontend
+      args:
+        VITE_SUPABASE_URL: ${SUPABASE_URL}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY}
+    restart: unless-stopped
+    depends_on:
+      - api
+    mem_limit: 128m
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    depends_on:
+      - web
+    mem_limit: 128m
+
+volumes:
+  rabbitmq_data:
