@@ -77,7 +77,7 @@ public record RutaAuditada(String modulo, String accion, String tabla, String re
             case "POST", "PUT", "PATCH", "DELETE" -> true;
             default -> false;
         };
-        if (!escritura || ruta.equals("/api/ia/chat")) return null;
+        if (!escritura || ruta.startsWith("/api/ia/chat")) return null;
 
         String[] partes = ruta.substring(5).split("/");
         String accion = switch (metodo) {

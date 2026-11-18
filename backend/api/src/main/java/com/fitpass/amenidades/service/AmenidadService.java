@@ -37,6 +37,10 @@ public class AmenidadService {
         return amenidadRepository.findAll();
     }
 
+    public List<Amenidad> listarVip() {
+        return amenidadRepository.findByRequierePlanVipTrue();
+    }
+
     public Amenidad obtener(Integer id) {
         return amenidadRepository.findById(id)
                 .orElseThrow(() -> error(

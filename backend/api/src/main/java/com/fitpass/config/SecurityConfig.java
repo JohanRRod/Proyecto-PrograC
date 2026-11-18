@@ -88,6 +88,7 @@ public class SecurityConfig {
 
                 // Asistente de IA: el chat es publico; ingesta y documentos solo ADMIN
                 .requestMatchers(HttpMethod.POST, "/api/ia/chat").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/ia/chat/stream").permitAll()
                 .requestMatchers("/api/ia/**").hasRole("ADMIN")
 
                 // Bloquear endpoints de desarrollo

@@ -32,6 +32,11 @@ public class AmenidadController {
         return service.listar();
     }
 
+    @GetMapping("/amenidades/vip")
+    public List<Amenidad> listarVip() {
+        return service.listarVip();
+    }
+
     @GetMapping("/amenidades/{id}")
     public Amenidad obtener(@PathVariable Integer id) {
         return service.obtener(id);
