@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -129,6 +130,32 @@ public class AgenteService {
         }
 
         return new ChatResponse(generacion.texto(), fuentes, sesion);
+    }
+
+    public void responderPorPartes(String mensaje, String sesionId, String ip, Consumer<String> alRecibir) {
+        String sesion = (sesionId == null || sesionId.isBlank()) ? UUID.randomUUID().toString() : sesionId.trim();
+        String pregunta = mensaje.strip();
+        controlarFrecuencia(sesion + "|" + ip);
+
+        long inicio = System.currentTimeMillis();
+
+        float[] consulta = gemini.embedding(pregunta, TipoEmbedding.RETRIEVAL_QUERY, null);
+        List<Fragmento> fragmentos = documentos.buscarSimilares(consulta, maxFragmentos, similitudMinima);
+
+        StringBuilder completo = new StringBuilder();
+        int tokens = gemini.generarPorPartes(INSTRUCCIONES, construirPrompt(pregunta, fragmentos), parte -> {
+            completo.append(parte);
+            alRecibir.accept(parte);
+        });
+
+        String respuesta = completo.toString().trim();
+        try {
+            logs.registrar(null, sesion, pregunta, respuesta,
+                    json.writeValueAsString(fuentesCitadas(respuesta, fragmentos)),
+                    tokens, System.currentTimeMillis() - inicio);
+        } catch (Exception ex) {
+            log.error("No se pudo registrar el log del agente", ex);
+        }
     }
 
     private String construirPrompt(String pregunta, List<Fragmento> fragmentos) {
