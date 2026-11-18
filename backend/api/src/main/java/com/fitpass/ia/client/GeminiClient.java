@@ -1,8 +1,12 @@
 package com.fitpass.ia.client;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -17,6 +21,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Cliente HTTP mínimo para la API de Gemini (Google AI Studio).
@@ -30,6 +35,7 @@ public class GeminiClient {
     public record Generacion(String texto, int tokens) {}
 
     private static final Logger log = LoggerFactory.getLogger(GeminiClient.class);
+    private static final ObjectMapper JSON = new ObjectMapper();
 
     private final RestClient http;
     private final String apiKey;
@@ -96,6 +102,44 @@ public class GeminiClient {
                     "El asistente no pudo generar una respuesta (" + motivo + ").");
         }
         return new Generacion(texto.toString().trim(), r.path("usageMetadata").path("totalTokenCount").asInt(0));
+    }
+
+    public int generarPorPartes(String instrucciones, String mensaje, Consumer<String> alRecibir) {
+        if (!configurado()) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                    "El asistente no está configurado en este servidor.");
+        }
+        Map<String, Object> cuerpo = Map.of(
+                "systemInstruction", Map.of("parts", List.of(Map.of("text", instrucciones))),
+                "contents", List.of(Map.of("role", "user", "parts", List.of(Map.of("text", mensaje)))),
+                "generationConfig", Map.of("temperature", 0.3, "maxOutputTokens", 1024));
+
+        return http.post()
+                .uri("/models/" + modeloChat + ":streamGenerateContent?alt=sse")
+                .header("x-goog-api-key", apiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(cuerpo)
+                .exchange((peticion, respuesta) -> {
+                    if (respuesta.getStatusCode().isError()) {
+                        throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+                                "El servicio de IA respondió con un error (" + respuesta.getStatusCode().value() + ").");
+                    }
+                    int tokens = 0;
+                    try (BufferedReader lector = new BufferedReader(
+                            new InputStreamReader(respuesta.getBody(), StandardCharsets.UTF_8))) {
+                        String linea;
+                        while ((linea = lector.readLine()) != null) {
+                            if (!linea.startsWith("data:")) continue;
+                            JsonNode trozo = JSON.readTree(linea.substring(5).trim());
+                            for (JsonNode parte : trozo.path("candidates").path(0).path("content").path("parts")) {
+                                String t = parte.path("text").asText("");
+                                if (!t.isEmpty()) alRecibir.accept(t);
+                            }
+                            tokens = trozo.path("usageMetadata").path("totalTokenCount").asInt(tokens);
+                        }
+                    }
+                    return tokens;
+                });
     }
 
     /**
