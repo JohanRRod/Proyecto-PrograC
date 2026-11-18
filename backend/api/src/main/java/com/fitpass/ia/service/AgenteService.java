@@ -45,7 +45,7 @@ public class AgenteService {
     /** Citas como [2] o agrupadas como [1, 4]. */
     private static final Pattern CITA = Pattern.compile("\\[(\\d{1,2}(?:\\s*,\\s*\\d{1,2})*)]");
 
-    private static final String INSTRUCCIONES = """
+    private static final String INSTRUCCIONES_PLANTILLA = """
             Eres el asistente virtual de FlexPass, una red de gimnasios con sedes en varios países.
             Reglas:
             - Solo atiendes temas de FlexPass: sedes, horarios, amenidades, planes, precios, cobros, pagos,
@@ -53,6 +53,8 @@ public class AgenteService {
             - Si te piden algo ajeno a FlexPass (programar o escribir código, tareas, traducciones, recetas,
               opiniones, noticias o cualquier tema general), no lo hagas. Responde con amabilidad en una frase,
               por ejemplo: "Solo puedo ayudarte con temas de FlexPass, como sedes, planes o cobros."
+            - Tienes ESTRICTAMENTE PROHIBIDO hablar sobre «%s». Si el usuario pregunta, insiste o menciona ese
+              tema de cualquier forma, recházalo con amabilidad y redirige a temas de FlexPass.
             - Si piden rutinas de ejercicio, dietas o consejos de salud, no los des: sugiere consultarlo con un
               instructor en su sede.
             - Si el mensaje mezcla algo de FlexPass con algo ajeno, responde solo la parte de FlexPass y aclara
@@ -84,13 +86,15 @@ public class AgenteService {
     private final int maxFragmentos;
     private final double similitudMinima;
     private final int mensajesPorMinuto;
+    private final String instrucciones;
     private final Map<String, Deque<Long>> historial = new ConcurrentHashMap<>();
 
     public AgenteService(GeminiClient gemini, DocumentoRagRepository documentos,
                          CatalogoContextoRepository catalogo, LogAgenteRepository logs, ObjectMapper json,
                          @Value("${fitpass.ia.max-fragmentos:4}") int maxFragmentos,
                          @Value("${fitpass.ia.similitud-minima:0.5}") double similitudMinima,
-                         @Value("${fitpass.ia.mensajes-por-minuto:10}") int mensajesPorMinuto) {
+                         @Value("${fitpass.ia.mensajes-por-minuto:10}") int mensajesPorMinuto,
+                         @Value("${fitpass.ia.tema-prohibido:criptomonedas}") String temaProhibido) {
         this.gemini = gemini;
         this.documentos = documentos;
         this.catalogo = catalogo;
@@ -99,6 +103,7 @@ public class AgenteService {
         this.maxFragmentos = maxFragmentos;
         this.similitudMinima = similitudMinima;
         this.mensajesPorMinuto = mensajesPorMinuto;
+        this.instrucciones = String.format(INSTRUCCIONES_PLANTILLA, temaProhibido);
     }
 
     public ChatResponse responder(String mensaje, String sesionId, String ip) {
@@ -112,7 +117,7 @@ public class AgenteService {
         List<Fragmento> fragmentos = documentos.buscarSimilares(consulta, maxFragmentos, similitudMinima);
 
         String prompt = construirPrompt(pregunta, fragmentos);
-        GeminiClient.Generacion generacion = gemini.generar(INSTRUCCIONES, prompt);
+        GeminiClient.Generacion generacion = gemini.generar(instrucciones, prompt);
 
         List<ChatResponse.Fuente> fuentes = fuentesCitadas(generacion.texto(), fragmentos);
         long tiempo = System.currentTimeMillis() - inicio;
