@@ -153,6 +153,11 @@ public class ReporteService {
         ReporteDefinicion reporte = catalogo.buscar(codigo)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reporte no encontrado"));
 
+        if ("clientes".equals(codigo) && (filtros.desde() == null || filtros.hasta() == null)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "El reporte de clientes requiere especificar las fechas inicial y final");
+        }
+
         if (filtros.rangoInvalido()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "La fecha inicial no puede ser posterior a la fecha final");

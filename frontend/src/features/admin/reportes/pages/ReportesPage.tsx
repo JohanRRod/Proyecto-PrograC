@@ -32,7 +32,9 @@ export function ReportesPage() {
     sucursalId: params.get('sede') ?? '',
   }
   const errorRango =
-    filtros.desde && filtros.hasta && filtros.desde > filtros.hasta
+    codigo === 'clientes' && (!filtros.desde || !filtros.hasta)
+      ? 'El reporte de clientes requiere seleccionar las fechas inicial y final.'
+      : filtros.desde && filtros.hasta && filtros.desde > filtros.hasta
       ? 'La fecha inicial no puede ser posterior a la final.'
       : null
 
