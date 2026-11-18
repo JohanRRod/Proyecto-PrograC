@@ -209,7 +209,8 @@ CREATE TABLE IF NOT EXISTS logs_agente_ia (
     respuesta_agente TEXT NOT NULL,
     documentos_citados JSONB,
     tokens_utilizados INT DEFAULT 0,
-    tiempo_respuesta_ms INT DEFAULT 0
+    tiempo_respuesta_ms INT DEFAULT 0,
+    direccion_ip VARCHAR(45)
 );
 
 CREATE TABLE IF NOT EXISTS documentos_rag (

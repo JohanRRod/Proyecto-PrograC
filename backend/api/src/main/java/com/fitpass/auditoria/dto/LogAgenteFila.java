@@ -14,5 +14,6 @@ public record LogAgenteFila(
         String respuesta,
         JsonNode documentosCitados,
         int tokens,
-        int tiempoMs
+        int tiempoMs,
+        String direccionIp
 ) {}

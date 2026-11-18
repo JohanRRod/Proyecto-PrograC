@@ -20,15 +20,15 @@ public class LogAgenteRepository {
     }
 
     public void registrar(UUID clienteId, String sesionId, String pregunta, String respuesta,
-                          String documentosCitadosJson, int tokens, long tiempoMs) {
+                          String documentosCitadosJson, int tokens, long tiempoMs, String ip) {
         jdbc.update("""
                 INSERT INTO public.logs_agente_ia
                     (cliente_id, sesion_id, prompt_usuario, respuesta_agente, documentos_citados,
-                     tokens_utilizados, tiempo_respuesta_ms)
-                VALUES (?, ?, ?, ?, CAST(? AS jsonb), ?, ?)
+                     tokens_utilizados, tiempo_respuesta_ms, direccion_ip)
+                VALUES (?, ?, ?, ?, CAST(? AS jsonb), ?, ?, ?)
                 """,
                 clienteId, sesionId, ocultarTarjetas(pregunta), ocultarTarjetas(respuesta),
-                documentosCitadosJson, tokens, (int) tiempoMs);
+                documentosCitadosJson, tokens, (int) tiempoMs, ip);
     }
 
     /** "4111 1111 1111 1111" -> "**** 1111". */

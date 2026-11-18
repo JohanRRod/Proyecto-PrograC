@@ -119,7 +119,7 @@ public class AgenteService {
 
         try {
             logs.registrar(null, sesion, pregunta, generacion.texto(),
-                    json.writeValueAsString(fuentes), generacion.tokens(), tiempo);
+                    json.writeValueAsString(fuentes), generacion.tokens(), tiempo, ip);
         } catch (Exception ex) {
             // La auditoría no debe impedir que el usuario reciba su respuesta.
             log.error("No se pudo registrar el log del agente", ex);

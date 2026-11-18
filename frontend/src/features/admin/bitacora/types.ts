@@ -39,6 +39,7 @@ export interface Conversacion {
   documentosCitados: Json
   tokens: number
   tiempoMs: number
+  direccionIp?: string | null
 }
 
 export interface FiltrosBitacora {

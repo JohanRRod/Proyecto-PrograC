@@ -170,7 +170,7 @@ public class AuditoriaRepository {
         List<LogAgenteFila> filas = db.query("""
                 SELECT l.id, l.fecha_hora, l.sesion_id, l.cliente_id, l.prompt_usuario, l.respuesta_agente,
                        l.documentos_citados::text AS citados, COALESCE(l.tokens_utilizados, 0) AS tokens,
-                       COALESCE(l.tiempo_respuesta_ms, 0) AS ms
+                       COALESCE(l.tiempo_respuesta_ms, 0) AS ms, l.direccion_ip
                 FROM public.logs_agente_ia l
                 """ + where + """
                 ORDER BY l.fecha_hora DESC, l.id DESC
@@ -184,7 +184,8 @@ public class AuditoriaRepository {
                     rs.getString("respuesta_agente"),
                     aJson(rs.getString("citados")),
                     rs.getInt("tokens"),
-                    rs.getInt("ms")));
+                    rs.getInt("ms"),
+                    rs.getString("direccion_ip")));
         return new Pagina<>(filas, total == null ? 0 : total, pagina, tamano);
     }
 

@@ -69,6 +69,7 @@ function FilaConversacion({ c }: { c: Conversacion }) {
         <span>{citados} {citados === 1 ? 'fuente citada' : 'fuentes citadas'}</span>
         <span className="tabular-nums">{c.tokens.toLocaleString('es-GT')} tokens</span>
         <span className="tabular-nums">{(c.tiempoMs / 1000).toFixed(1)} s</span>
+        {c.direccionIp && <span>IP {c.direccionIp}</span>}
         <span className="truncate" title={c.sesionId}>Sesión {c.sesionId.slice(0, 8)}</span>
       </div>
     </li>
