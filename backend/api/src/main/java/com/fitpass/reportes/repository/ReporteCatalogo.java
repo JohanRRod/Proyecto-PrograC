@@ -384,7 +384,27 @@ public class ReporteCatalogo {
             WHERE %s
             GROUP BY cg.id, cg.nombre_clase, s.nombre, cg.dia_semana, cg.hora_inicio, cg.cupo_maximo
             ORDER BY reservas DESC, clase
-            """.formatted(rango("r.fecha_clase"), sede("cg.sucursal_id")))
+            """.formatted(rango("r.fecha_clase"), sede("cg.sucursal_id"))),
+
+        new ReporteDefinicion(
+            "instructores",
+            "Instructores registrados",
+            "Instructores de cada sede con su especialidad, estado y fecha de registro.",
+            CLASES, "Fecha de registro", true,
+            List.of(),
+            """
+            SELECT i.nombre_completo AS instructor,
+                   i.especialidad,
+                   s.nombre AS sucursal_base,
+                   i.email,
+                   i.telefono,
+                   i.activo,
+                   i.created_at AS fecha_registro
+            FROM public.instructores i
+            JOIN public.sucursales s ON s.id = i.sucursal_base_id
+            WHERE %s AND %s
+            ORDER BY i.created_at DESC
+            """.formatted(rango(local("i.created_at")), sede("i.sucursal_base_id")))
     );
 
     public List<ReporteDefinicion> todos() {
